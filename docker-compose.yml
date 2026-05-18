@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: restaurant_postgres
+    environment:
+      POSTGRES_DB: restaurantdb
+      POSTGRES_USER: restaurant
+      POSTGRES_PASSWORD: restaurant
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U restaurant -d restaurantdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: restaurant_ai_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/restaurantdb
+      DB_USERNAME: restaurant
+      DB_PASSWORD: restaurant
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: gpt-4o-mini
+      WHATSAPP_API_URL: https://graph.facebook.com/v22.0
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID}
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:-change-me}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
