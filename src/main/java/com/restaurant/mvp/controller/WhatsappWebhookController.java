@@ -20,6 +20,8 @@ public class WhatsappWebhookController {
     private final ChatService chatService;
     private final WhatsappClient whatsappClient;
 
+    // Lombok @Slf4j proporciona 'log'
+
     @Value("${whatsapp.verify-token}")
     private String verifyToken;
 
