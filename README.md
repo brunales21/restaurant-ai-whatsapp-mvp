@@ -1,6 +1,6 @@
 # restaurant-ai-whatsapp-mvp
 
-MVP funcional de chatbot para restaurantes con **Java 21 + Spring Boot 4 + Spring AI + PostgreSQL**, conectado con **WhatsApp Cloud API** y con **tool calling real**.
+MVP funcional de chatbot para restaurantes con **Java 21 + Spring Boot 3.4.x + Spring AI + PostgreSQL**, conectado con **WhatsApp Cloud API** y con **tool calling real**.
 
 ## Qué demuestra este MVP
 
