@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -17,9 +18,17 @@ public class ReservationService {
     private static final String CANCELED = "CANCELED";
 
     private final ReservationRepository reservationRepository;
+    private final Clock clock;
 
     @Transactional
     public String createReservation(String customerName, String phone, LocalDate date, LocalTime time, Integer people) {
+        if (date == null || time == null || people == null || people <= 0) {
+            return "Faltan datos para reservar: fecha, hora y número de personas son obligatorios.";
+        }
+        if (date.isBefore(LocalDate.now(clock))) {
+            return "No puedo crear reservas en fechas pasadas. Indica una fecha actual o futura.";
+        }
+
         Reservation reservation = Reservation.builder()
                 .customerName(customerName)
                 .phone(phone)

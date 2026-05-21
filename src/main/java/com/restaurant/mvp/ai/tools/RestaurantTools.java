@@ -21,7 +21,12 @@ public class RestaurantTools {
         return menuService.getTodayMenu();
     }
 
-    @Tool(description = "Crea una reserva de restaurante con nombre, teléfono, fecha, hora y número de personas")
+    @Tool(description = "Obtiene el menú de una fecha concreta. Usa formato ISO yyyy-MM-dd")
+    public String getMenuByDate(LocalDate menuDate) {
+        return menuService.getMenuByDate(menuDate);
+    }
+
+    @Tool(description = "Crea una reserva de restaurante con nombre, teléfono, fecha real, hora y número de personas")
     public String createReservation(String customerName, String phone, LocalDate reservationDate, LocalTime reservationTime, Integer people) {
         return reservationService.createReservation(customerName, phone, reservationDate, reservationTime, people);
     }

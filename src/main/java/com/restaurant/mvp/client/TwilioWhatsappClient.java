@@ -30,8 +30,7 @@ public class TwilioWhatsappClient {
         log.info("Enviando respuesta a Twilio WhatsApp. to={}", to);
         Message.creator(
                 new PhoneNumber(to),
-                // Twilio WhatsApp requires the from (sender) to be prefixed with "whatsapp:"
-                new PhoneNumber("whatsapp:" + whatsappNumber),
+                new PhoneNumber(whatsappNumber),
                 text
         ).create();
     }

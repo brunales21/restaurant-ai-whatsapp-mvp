@@ -33,7 +33,7 @@ public class TwilioWebhookController {
             return ResponseEntity.ok().build();
         }
 
-        String response = chatService.chat(body);
+        String response = chatService.chat(from, body);
         log.info("Respuesta generada por IA para {}: {}", from, response);
 
         twilioWhatsappClient.sendTextMessage(from, response);
