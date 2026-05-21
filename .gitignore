@@ -1,0 +1,36 @@
+# Maven
+/target/
+
+# Lombok-generated files and build artifacts
+*.class
+*.jar
+*.war
+*.ear
+
+# IDEs
+/.idea/
+/*.iml
+/.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Environment files (do not commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Others
+node_modules/
+coverage/
+
+# Keep distributions out
+dist/
+
