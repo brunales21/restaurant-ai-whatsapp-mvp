@@ -15,6 +15,7 @@ public class RestaurantTools {
 
     private final MenuService menuService;
     private final ReservationService reservationService;
+    private final com.restaurant.mvp.service.ConversationContext conversationContext;
 
     @Tool(description = "Obtiene el menú del día actual del restaurante")
     public String getTodayMenu() {
@@ -26,9 +27,10 @@ public class RestaurantTools {
         return menuService.getMenuByDate(menuDate);
     }
 
-    @Tool(description = "Crea una reserva de restaurante con nombre, teléfono, fecha real, hora y número de personas")
+    @Tool(description = "Crea una reserva de restaurante con nombre, fecha real, hora y número de personas. El teléfono se toma del remitente de WhatsApp.")
     public String createReservation(String customerName, String phone, LocalDate reservationDate, LocalTime reservationTime, Integer people) {
-        return reservationService.createReservation(customerName, phone, reservationDate, reservationTime, people);
+        String effectivePhone = (phone == null || phone.isBlank()) ? conversationContext.getCurrentPhone() : phone;
+        return reservationService.createReservation(customerName, effectivePhone, reservationDate, reservationTime, people);
     }
 
     @Tool(description = "Cancela una reserva por ID o por teléfono")

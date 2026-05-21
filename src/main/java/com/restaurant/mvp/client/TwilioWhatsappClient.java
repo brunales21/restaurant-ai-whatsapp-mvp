@@ -7,10 +7,13 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
 public class TwilioWhatsappClient {
+
+    private static final String WHATSAPP_PREFIX = "whatsapp:";
 
     @Value("${twilio.account-sid}")
     private String accountSid;
@@ -27,11 +30,22 @@ public class TwilioWhatsappClient {
     }
 
     public void sendTextMessage(String to, String text) {
-        log.info("Enviando respuesta a Twilio WhatsApp. to={}", to);
+        String normalizedTo = normalizeWhatsappAddress(to);
+        String normalizedFrom = normalizeWhatsappAddress(whatsappNumber);
+
+        log.info("Enviando respuesta a Twilio WhatsApp. from={} to={}", normalizedFrom, normalizedTo);
         Message.creator(
-                new PhoneNumber(to),
-                new PhoneNumber(whatsappNumber),
+                new PhoneNumber(normalizedTo),
+                new PhoneNumber(normalizedFrom),
                 text
         ).create();
+    }
+
+    private String normalizeWhatsappAddress(String value) {
+        if (!StringUtils.hasText(value)) {
+            throw new IllegalArgumentException("Número de WhatsApp vacío o nulo");
+        }
+        String trimmed = value.trim();
+        return trimmed.startsWith(WHATSAPP_PREFIX) ? trimmed : WHATSAPP_PREFIX + trimmed;
     }
 }

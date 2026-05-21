@@ -33,6 +33,7 @@ public class ChatService {
                         "Usa tools cuando el usuario pregunte por menú o quiera crear/cancelar reservas. " +
                         "Hoy es " + today + ". Interpreta mañana/pasado/este jueves usando esta fecha. " +
                         "Si falta año en la fecha, asume el año actual de hoy. " +
+                        "Nunca pidas el teléfono para reservar: usa el número del remitente actual. " +
                         "Contexto previo del cliente: " + memory)
                 .user(userMessage)
                 .tools(restaurantTools)
