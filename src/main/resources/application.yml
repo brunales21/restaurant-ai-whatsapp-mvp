@@ -25,7 +25,7 @@ server:
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}
   auth-token: ${TWILIO_AUTH_TOKEN:}
-  whatsapp-number: ${TWILIO_WHATSAPP_NUMBER:whatsapp:+14155238886}
+  whatsapp-number: ${TWILIO_WHATSAPP_NUMBER:+14155238886}
 
 springdoc:
   swagger-ui:
