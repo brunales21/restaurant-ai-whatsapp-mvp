@@ -1,139 +1,63 @@
-# restaurant-ai-whatsapp-mvp
+# restaurant-ai-whatsapp-mvp (Twilio Sandbox)
 
-MVP funcional de chatbot para restaurantes con **Java 21 + Spring Boot 3.4.x + Spring AI + PostgreSQL**, conectado con **WhatsApp Cloud API** y con **tool calling real**.
+MVP de chatbot para restaurantes con **Java 21 + Spring Boot + Spring AI + PostgreSQL**, conectado a **WhatsApp mediante Twilio Sandbox**.
 
-## Qué demuestra este MVP
+## Flujo
 
-- Responder por WhatsApp usando lenguaje natural.
-- Consultar menú del día en PostgreSQL.
-- Crear y cancelar reservas en PostgreSQL.
-- Decidir automáticamente qué tool ejecutar según la intención del usuario.
+WhatsApp -> Twilio Sandbox -> `POST /webhooks/twilio` -> `ChatService` -> Spring AI tools -> PostgreSQL -> respuesta -> Twilio API.
 
-## Arquitectura (simple y demo-friendly)
+## Configuración requerida
 
-- `controller`: endpoints REST locales + webhook de WhatsApp.
-- `service`: orquestación de chat, menú y reservas.
-- `repository`: acceso JPA a PostgreSQL.
-- `entity`: tablas `daily_menus` y `reservations`.
-- `ai/tools`: tools expuestas al LLM con `@Tool`.
-- `client`: cliente HTTP para responder a WhatsApp Cloud API.
-- `configuration`: configuración de `ChatClient`.
-
-## Flujo completo
-
-1. Usuario escribe en WhatsApp.
-2. Meta llama al webhook `POST /webhooks/whatsapp`.
-3. El sistema extrae el texto y teléfono.
-4. `ChatService` manda el mensaje al LLM con Spring AI.
-5. El LLM decide si llamar `getTodayMenu`, `createReservation` o `cancelReservation`.
-6. Tool ejecuta lógica real en PostgreSQL.
-7. El LLM redacta respuesta natural final.
-8. Se envía respuesta al usuario mediante WhatsApp Cloud API.
-
-## Tools incluidas (solo MVP)
-
-- `getTodayMenu`
-- `createReservation`
-- `cancelReservation`
-
-## Estructura del proyecto
-
-```text
-src/main/java/com/restaurant/mvp
-├── ai/tools/RestaurantTools.java
-├── client/WhatsappClient.java
-├── config/AiConfig.java
-├── controller/ChatController.java
-├── controller/WhatsappWebhookController.java
-├── dto/
-├── entity/
-├── repository/
-└── service/
-```
-
-## Base de datos
-
-Tablas mínimas:
-
-- `daily_menus`
-- `reservations`
-
-Scripts:
-
-- `src/main/resources/schema.sql`
-- `src/main/resources/data.sql`
-
-## Configuración
-
-Variables principales:
+Variables de entorno:
 
 - `OPENAI_API_KEY`
-- `OPENAI_MODEL` (default `gpt-4o-mini`)
-- `WHATSAPP_PHONE_NUMBER_ID`
-- `WHATSAPP_ACCESS_TOKEN`
-- `WHATSAPP_VERIFY_TOKEN`
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_WHATSAPP_NUMBER` (por defecto sandbox: `whatsapp:+14155238886`)
 
-## Arranque rápido con Docker Compose
+## Arranque
 
 ```bash
 docker compose up --build
 ```
 
-Servicios:
+## Exponer webhook con ngrok
 
-- App: `http://localhost:8080`
-- Swagger: `http://localhost:8080/swagger-ui.html`
-- PostgreSQL: `localhost:5432`
-
-## Probar local sin WhatsApp
-
-### Endpoint de chat
-
-`POST /chat`
-
-```json
-{
-  "message": "¿Qué hay hoy de menú?"
-}
-```
-
-Ejemplo con curl:
+1. Arranca app en `http://localhost:8080`.
+2. Ejecuta:
 
 ```bash
-curl -X POST http://localhost:8080/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Reserva una mesa mañana a las 14 para 3 personas, soy Laura y mi teléfono es +34600123456"}'
+ngrok http 8080
 ```
 
-## Configurar webhook de WhatsApp Cloud API
+3. Copia URL HTTPS pública (ej: `https://abc123.ngrok-free.app`).
 
-1. En Meta Developers, configura la URL de callback:
-   - `GET/POST https://TU_DOMINIO/webhooks/whatsapp`
-2. Configura verify token igual a `WHATSAPP_VERIFY_TOKEN`.
-3. Suscribe evento de mensajes.
-4. Añade teléfono de prueba en sandbox.
+## Conectar Twilio Sandbox
 
-### Verificación webhook
+1. En Twilio Console -> Messaging -> Try it out -> Send a WhatsApp message -> Sandbox.
+2. Une tu teléfono enviando el código de join al número sandbox.
+3. En "When a message comes in" coloca:
 
-- Endpoint: `GET /webhooks/whatsapp`
-- Valida `hub.verify_token` y devuelve `hub.challenge`.
+```text
+https://TU_NGROK/webhooks/twilio
+```
 
-## Ejemplos reales de conversación
+4. Método: `HTTP POST`.
 
-- Usuario: "¿Qué hay hoy de menú?"
-  - LLM -> `getTodayMenu()` -> Respuesta natural.
-- Usuario: "Reserva una mesa mañana a las 14 para 2 personas. Soy Ana, +34600111222"
-  - LLM -> `createReservation(...)` -> Confirmación con ID.
-- Usuario: "Cancela mi reserva del teléfono +34600111222"
-  - LLM -> `cancelReservation(null, "+34600111222")` -> Cancelación confirmada.
+## Webhook esperado
 
-## OpenAPI
+- Endpoint: `POST /webhooks/twilio`
+- Content-Type: `application/x-www-form-urlencoded`
+- Parámetros usados:
+  - `From`
+  - `Body`
 
-- UI: `/swagger-ui.html`
-- Incluye endpoint `/chat` y webhook `/webhooks/whatsapp`.
+## Prueba rápida
 
-## Evolución futura (sin romper simplicidad)
+Desde tu WhatsApp (el número unido al sandbox), envía:
 
-- Añadir autenticación del webhook por firma.
-- Añadir reglas de disponibilidad horaria.
-- Añadir endpoint de backoffice para gestionar menús.
+- "¿Qué hay hoy de menú?"
+- "Reserva una mesa mañana a las 14 para 2 personas, soy Ana, +34600111222"
+- "Cancela mi reserva del teléfono +34600111222"
+
+La app responderá automáticamente usando Spring AI + tools actuales.
