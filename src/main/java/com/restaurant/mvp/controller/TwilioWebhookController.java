@@ -2,6 +2,7 @@ package com.restaurant.mvp.controller;
 
 import com.restaurant.mvp.client.TwilioWhatsappClient;
 import com.restaurant.mvp.service.ChatService;
+import com.restaurant.mvp.service.ConversationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.twilio.exception.ApiException;
@@ -21,7 +22,7 @@ public class TwilioWebhookController {
 
     private final ChatService chatService;
     private final TwilioWhatsappClient twilioWhatsappClient;
-    private final com.restaurant.mvp.service.ConversationContext conversationContext;
+    private final ConversationContext conversationContext;
 
     @PostMapping(consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<Void> receiveMessage(

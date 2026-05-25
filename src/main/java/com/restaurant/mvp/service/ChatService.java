@@ -2,6 +2,7 @@ package com.restaurant.mvp.service;
 
 import com.restaurant.mvp.ai.tools.RestaurantTools;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -26,6 +28,7 @@ public class ChatService {
 
     public String chat(String conversationId, String userMessage) {
         String memory = memoryByPhone.getOrDefault(conversationId, "");
+        log.info("Memory for {}: {}", conversationId, memory);
         String today = LocalDate.now(clock).toString();
 
         String response = chatClient.prompt()
@@ -33,7 +36,7 @@ public class ChatService {
                         "Usa tools cuando el usuario pregunte por menú o quiera crear/cancelar reservas. " +
                         "Hoy es " + today + ". Interpreta mañana/pasado/este jueves usando esta fecha. " +
                         "Si falta año en la fecha, asume el año actual de hoy. " +
-                        "Nunca pidas el teléfono para reservar: usa el número del remitente actual. " +
+                        "Nunca pidas ni inventes el teléfono para reservar: usa el número del remitente actual. " +
                         "Contexto previo del cliente: " + memory)
                 .user(userMessage)
                 .tools(restaurantTools)
