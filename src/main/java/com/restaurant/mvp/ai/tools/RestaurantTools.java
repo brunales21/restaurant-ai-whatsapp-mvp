@@ -1,5 +1,6 @@
 package com.restaurant.mvp.ai.tools;
 
+import com.restaurant.mvp.service.ConversationContext;
 import com.restaurant.mvp.service.MenuService;
 import com.restaurant.mvp.service.ReservationService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class RestaurantTools {
 
     private final MenuService menuService;
     private final ReservationService reservationService;
-    private final com.restaurant.mvp.service.ConversationContext conversationContext;
+    private final ConversationContext conversationContext;
 
     @Tool(description = "Obtiene el menú del día actual del restaurante")
     public String getTodayMenu() {
@@ -35,6 +36,7 @@ public class RestaurantTools {
 
     @Tool(description = "Cancela una reserva por ID o por teléfono")
     public String cancelReservation(Long reservationId, String phone) {
-        return reservationService.cancelReservation(reservationId, phone);
+        String effectivePhone = (phone == null || phone.isBlank()) ? conversationContext.getCurrentPhone() : phone;
+        return reservationService.cancelReservation(reservationId, effectivePhone);
     }
 }
