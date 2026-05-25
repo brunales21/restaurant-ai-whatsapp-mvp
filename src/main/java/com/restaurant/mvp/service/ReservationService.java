@@ -29,9 +29,14 @@ public class ReservationService {
             return "No puedo crear reservas en fechas pasadas. Indica una fecha actual o futura.";
         }
 
+        String normalizedPhone = normalizePhone(phone);
+        if (normalizedPhone == null) {
+            return "No pude detectar un teléfono válido desde el remitente de WhatsApp.";
+        }
+
         Reservation reservation = Reservation.builder()
                 .customerName(customerName)
-                .phone(phone)
+                .phone(normalizedPhone)
                 .reservationDate(date)
                 .reservationTime(time)
                 .people(people)
@@ -39,8 +44,9 @@ public class ReservationService {
                 .build();
 
         Reservation saved = reservationRepository.save(reservation);
-        return "Reserva creada con éxito. ID " + saved.getId() + " para " + saved.getCustomerName() + " el "
-                + saved.getReservationDate() + " a las " + saved.getReservationTime() + " para " + saved.getPeople() + " personas.";
+        return "Reserva creada con éxito. ID de reserva: " + saved.getId() + ". Teléfono asociado: " + saved.getPhone() +
+                ". Para " + saved.getCustomerName() + " el " + saved.getReservationDate() + " a las " +
+                saved.getReservationTime() + " para " + saved.getPeople() + " personas.";
     }
 
     @Transactional
@@ -51,8 +57,9 @@ public class ReservationService {
                     .orElse("No encontré una reserva con ese ID.");
         }
 
-        if (phone != null && !phone.isBlank()) {
-            return reservationRepository.findFirstByPhoneAndStatus(phone, CONFIRMED)
+        String normalizedPhone = normalizePhone(phone);
+        if (normalizedPhone != null) {
+            return reservationRepository.findFirstByPhoneAndStatus(normalizedPhone, CONFIRMED)
                     .map(this::cancelAndBuildMessage)
                     .orElse("No encontré una reserva activa para ese teléfono.");
         }
@@ -63,5 +70,14 @@ public class ReservationService {
     private String cancelAndBuildMessage(Reservation reservation) {
         reservation.setStatus(CANCELED);
         return "Reserva cancelada. ID " + reservation.getId() + " para " + reservation.getCustomerName() + ".";
+    }
+
+    private String normalizePhone(String rawPhone) {
+        if (rawPhone == null || rawPhone.isBlank()) {
+            return null;
+        }
+        String withoutChannel = rawPhone.replace("whatsapp:", "").trim();
+        String digitsOnly = withoutChannel.replaceAll("[^0-9]", "");
+        return digitsOnly.isBlank() ? null : digitsOnly;
     }
 }
