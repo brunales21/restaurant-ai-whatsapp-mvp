@@ -28,10 +28,10 @@ public class RestaurantTools {
         return menuService.getMenuByDate(menuDate);
     }
 
-    @Tool(description = "Crea una reserva de restaurante con nombre, fecha real, hora y número de personas. El teléfono siempre se toma del remitente de WhatsApp.")
+    @Tool(description = "Crea una reserva de restaurante con nombre, fecha real, hora y número de personas. El teléfono se toma del remitente de WhatsApp.")
     public String createReservation(String customerName, String phone, LocalDate reservationDate, LocalTime reservationTime, Integer people) {
-        String senderPhone = conversationContext.getCurrentPhone();
-        return reservationService.createReservation(customerName, senderPhone, reservationDate, reservationTime, people);
+        String effectivePhone = (phone == null || phone.isBlank()) ? conversationContext.getCurrentPhone() : phone;
+        return reservationService.createReservation(customerName, effectivePhone, reservationDate, reservationTime, people);
     }
 
     @Tool(description = "Cancela una reserva por ID o por teléfono")
