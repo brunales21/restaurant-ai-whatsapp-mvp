@@ -30,14 +30,17 @@ public class ChatService {
         String memory = memoryByPhone.getOrDefault(conversationId, "");
         log.info("Memory for {}: {}", conversationId, memory);
         String today = LocalDate.now(clock).toString();
+        String prompt = "Eres el asistente de un restaurante. Responde en español de forma amable y breve. " +
+                "Usa tools cuando el usuario pregunte por menú o quiera crear/cancelar reservas. " +
+                "Hoy es " + today + ". Interpreta mañana/pasado/este jueves usando esta fecha. " +
+                "Si falta año en la fecha, asume el año actual de hoy. " +
+                "Nunca pidas ni inventes el teléfono para reservar: usa el número del remitente actual. " +
+                "Contexto previo del cliente: " + memory;
+
+        log.info("Prompt for {}: {}", conversationId, prompt + " | Usuario: " + userMessage);
 
         String response = chatClient.prompt()
-                .system("Eres el asistente de un restaurante. Responde en español de forma amable y breve. " +
-                        "Usa tools cuando el usuario pregunte por menú o quiera crear/cancelar reservas. " +
-                        "Hoy es " + today + ". Interpreta mañana/pasado/este jueves usando esta fecha. " +
-                        "Si falta año en la fecha, asume el año actual de hoy. " +
-                        "Nunca pidas ni inventes el teléfono para reservar: usa el número del remitente actual. " +
-                        "Contexto previo del cliente: " + memory)
+                .system(prompt)
                 .user(userMessage)
                 .tools(restaurantTools)
                 .call()
