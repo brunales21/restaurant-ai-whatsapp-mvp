@@ -16,6 +16,15 @@ services:
       timeout: 5s
       retries: 5
 
+  adminer:
+    image: adminer
+    container_name: restaurant_adminer
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8082:8080"
   mcp-server:
     build: ./mcp-server
     container_name: restaurant_mcp_server
@@ -44,8 +53,8 @@ services:
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
-      RESTAURANT_MCP_SERVER_URL: http://mcp-server:8080
-      RESTAURANT_MCP_SERVER_ENDPOINT: /mcp
+      RESTAURANT_MCP_SERVER_URL: ${RESTAURANT_MCP_SERVER_URL:-http://mcp-server:8080}
+      RESTAURANT_MCP_SERVER_ENDPOINT: ${RESTAURANT_MCP_SERVER_ENDPOINT:-/mcp}
       MCP_CLIENT_PORT: 8081
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}

@@ -1,11 +1,73 @@
 INSERT INTO daily_menus (menu_date, starter, main_course, dessert, price)
 VALUES
-    ('2026-05-21', 'Gazpacho andaluz', 'Paella de marisco', 'Tarta de queso', 18.50),
-    ('2026-05-22', 'Ensalada de quinoa', 'Pollo al horno con verduras', 'Fruta de temporada', 16.90),
-    ('2026-05-23', 'Croquetas caseras', 'Merluza al horno', 'Arroz con leche', 19.20)
-ON CONFLICT (menu_date) DO NOTHING;
+    ('2026-06-01', 'Gazpacho de sandía', 'Hamburguesa gourmet', 'Cookie caliente', 17.50),
+    ('2026-06-02', 'Hummus con crudités', 'Risotto de setas', 'Panna cotta', 19.50),
+    ('2026-06-03', 'Tartar de tomate', 'Salmón a la plancha', 'Tiramisú', 22.00),
+    ('2026-06-04', 'Crema de puerro', 'Albóndigas en salsa', 'Leche frita', 18.20),
+    ('2026-06-05', 'Ensalada griega', 'Secreto ibérico', 'Tarta de zanahoria', 23.50),
+    ('2026-06-06', 'Patatas bravas', 'Fideuá de marisco', 'Crema catalana', 20.50),
+    ('2026-06-07', 'Tabulé', 'Pollo tikka masala', 'Macedonia de frutas', 18.00),
+    ('2026-06-08', 'Ajoblanco', 'Rabo de toro', 'Profiteroles', 24.50),
+    ('2026-06-09', 'Ensalada de lentejas', 'Atún rojo a la plancha', 'Flan de huevo', 21.90),
+    ('2026-06-10', 'Sopa castellana', 'Cochinillo asado', 'Arroz con leche', 25.00),
+    ('2026-06-11', 'Carpaccio de calabacín', 'Pechuga rellena de queso', 'Brownie', 18.50),
+    ('2026-06-12', 'Salmorejo', 'Paella valenciana', 'Helado de vainilla', 20.90),
+    ('2026-06-13', 'Berenjenas con miel', 'Dorada al horno', 'Tarta de queso', 22.50),
+    ('2026-06-14', 'Ensalada caprese', 'Costillas BBQ', 'Cheesecake Oreo', 19.90),
+    ('2026-06-15', 'Crema de champiñones', 'Lomo en salsa pimienta', 'Natillas caseras', 18.90),
+    ('2026-06-16', 'Pisto manchego', 'Merluza en salsa verde', 'Fruta fresca', 20.00),
+    ('2026-06-17', 'Guacamole con totopos', 'Tacos de pollo', 'Tres leches', 17.90),
+    ('2026-06-18', 'Ensalada de pasta', 'Lasaña vegetal', 'Mousse de limón', 18.20),
+    ('2026-06-19', 'Crema de zanahoria', 'Solomillo de cerdo', 'Tarta de chocolate', 22.00),
+    ('2026-06-20', 'Gyozas de verduras', 'Ternera al curry', 'Helado de coco', 19.50),
+    ('2026-06-21', 'Ensalada César', 'Salmón teriyaki', 'Panna cotta', 21.50),
+    ('2026-06-22', 'Gazpacho andaluz', 'Pollo al ajillo', 'Flan casero', 17.80),
+    ('2026-06-23', 'Crema de calabacín', 'Arroz meloso de marisco', 'Tiramisú', 21.90),
+    ('2026-06-24', 'Croquetas de jamón', 'Carrillera al vino tinto', 'Leche frita', 23.50),
+    ('2026-06-25', 'Ensalada mediterránea', 'Bacalao gratinado', 'Brownie con nueces', 20.50),
+    ('2026-06-26', 'Sopa de tomate', 'Entrecot a la parrilla', 'Tarta Red Velvet', 26.00),
+    ('2026-06-27', 'Rollitos vietnamitas', 'Pad Thai de pollo', 'Mango sticky rice', 19.90),
+    ('2026-06-28', 'Crema de espárragos', 'Conejo al ajillo', 'Arroz con leche', 20.20),
+    ('2026-06-29', 'Ensalada de quinoa', 'Hamburguesa Angus', 'Cookie de chocolate', 18.90),
+    ('2026-06-30', 'Gazpacho tradicional', 'Paella mixta', 'Tarta de Santiago', 21.00)
+    ON CONFLICT (menu_date) DO NOTHING;
 
-INSERT INTO reservations (customer_name, phone, reservation_date, reservation_time, people, status)
+INSERT INTO reservations (
+    customer_name,
+    phone,
+    reservation_date,
+    reservation_time,
+    people,
+    status
+)
 VALUES
-    ('Ana López', '+34600111222', '2026-05-22', '14:00', 2, 'CONFIRMED'),
-    ('Carlos Pérez', '+34600999888', '2026-05-23', '21:30', 4, 'CONFIRMED');
+    ('Ana López', '+34600111222', '2026-06-01', '14:00', 2, 'CONFIRMED'),
+    ('Carlos Pérez', '+34600999888', '2026-06-01', '21:30', 4, 'CONFIRMED'),
+    ('María García', '+34611222333', '2026-06-02', '14:30', 3, 'CONFIRMED'),
+    ('Javier Martín', '+34622333444', '2026-06-03', '21:00', 2, 'PENDING'),
+    ('Laura Sánchez', '+34633444555', '2026-06-04', '14:00', 6, 'CONFIRMED'),
+    ('Pedro Ruiz', '+34644555666', '2026-06-05', '22:00', 5, 'CONFIRMED'),
+    ('Lucía Fernández', '+34655666777', '2026-06-06', '13:30', 2, 'CANCELLED'),
+    ('Miguel Torres', '+34666777888', '2026-06-06', '21:00', 8, 'CONFIRMED'),
+    ('Sara Gómez', '+34677888999', '2026-06-07', '14:15', 4, 'CONFIRMED'),
+    ('Alberto Díaz', '+34688999000', '2026-06-08', '21:30', 2, 'PENDING'),
+    ('Cristina Romero', '+34699000111', '2026-06-10', '14:00', 7, 'CONFIRMED'),
+    ('David Navarro', '+34610111222', '2026-06-11', '21:00', 2, 'CONFIRMED'),
+    ('Patricia Molina', '+34620222333', '2026-06-12', '14:30', 5, 'CONFIRMED'),
+    ('Sergio Ortega', '+34630333444', '2026-06-13', '22:00', 3, 'CANCELLED'),
+    ('Elena Castro', '+34640444555', '2026-06-14', '13:45', 2, 'CONFIRMED'),
+    ('Raúl Jiménez', '+34650555666', '2026-06-15', '21:15', 4, 'CONFIRMED'),
+    ('Beatriz León', '+34660666777', '2026-06-17', '14:00', 6, 'PENDING'),
+    ('Hugo Vidal', '+34670777888', '2026-06-18', '21:00', 2, 'CONFIRMED'),
+    ('Marta Herrera', '+34680888999', '2026-06-20', '14:30', 5, 'CONFIRMED'),
+    ('Iván Núñez', '+34690999000', '2026-06-21', '21:45', 2, 'CONFIRMED'),
+    ('Natalia Vega', '+34611122334', '2026-06-22', '14:00', 10, 'CONFIRMED'),
+    ('Jorge Prieto', '+34622233445', '2026-06-23', '21:00', 3, 'PENDING'),
+    ('Claudia Serrano', '+34633344556', '2026-06-24', '14:15', 2, 'CONFIRMED'),
+    ('Daniel Gil', '+34644455667', '2026-06-25', '22:00', 4, 'CONFIRMED'),
+    ('Paula Rojas', '+34655566778', '2026-06-26', '14:30', 8, 'CONFIRMED'),
+    ('Adrián Moreno', '+34666677889', '2026-06-27', '21:15', 2, 'CANCELLED'),
+    ('Silvia Campos', '+34677788990', '2026-06-28', '13:30', 4, 'CONFIRMED'),
+    ('Fernando Blanco', '+34688899001', '2026-06-29', '21:00', 6, 'CONFIRMED'),
+    ('Andrea Iglesias', '+34699900112', '2026-06-30', '14:00', 2, 'CONFIRMED')
+    ON CONFLICT DO NOTHING;
