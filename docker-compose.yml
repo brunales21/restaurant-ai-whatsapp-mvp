@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: restaurant_postgres
+    environment:
+      POSTGRES_DB: restaurantdb
+      POSTGRES_USER: restaurant
+      POSTGRES_PASSWORD: restaurant
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U restaurant -d restaurantdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mcp-server:
+    build: ./mcp-server
+    container_name: restaurant_mcp_server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/restaurantdb
+      DB_USERNAME: restaurant
+      DB_PASSWORD: restaurant
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  mcp-client:
+    build: ./mcp-client
+    container_name: restaurant_mcp_client
+    depends_on:
+      mcp-server:
+        condition: service_healthy
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      RESTAURANT_MCP_SERVER_URL: http://mcp-server:8080
+      RESTAURANT_MCP_SERVER_ENDPOINT: /mcp
+      MCP_CLIENT_PORT: 8081
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      TWILIO_WHATSAPP_NUMBER: ${TWILIO_WHATSAPP_NUMBER:-whatsapp:+14155238886}
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
