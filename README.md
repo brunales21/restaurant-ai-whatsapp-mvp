@@ -1,6 +1,6 @@
 # restaurant-ai-whatsapp-mvp (Twilio Sandbox)
 
-MVP de chatbot para restaurantes con **Java 21 + Spring Boot + Spring AI + PostgreSQL**, conectado a **WhatsApp mediante Twilio Sandbox**.
+MVP de chatbot para restaurantes con **Java 21 + Spring Boot 3.5.x + Spring AI + PostgreSQL**, conectado a **WhatsApp mediante Twilio Sandbox**.
 
 ## Flujo
 
@@ -68,3 +68,14 @@ La app responderá automáticamente usando Spring AI + tools actuales.
 - Consulta de menú por fecha con tool `getMenuByDate` (ej: mañana, pasado, este jueves, 2026-05-23).
 - Memoria básica por número de WhatsApp (contexto por `From`).
 - Reservas validadas con fecha real actual/futura y datos demo en mayo de 2026.
+
+
+## Proyecto MCP client separado
+
+Este repositorio ahora incluye un segundo proyecto Spring Boot en `mcp-client/`.
+
+Recomendación aplicada: mantenerlo en el mismo repositorio por ahora, pero como proyecto separado. Así el MVP conserva juntos servidor y cliente mientras se estabiliza el contrato MCP; cuando el cliente tenga ciclo de vida propio, se puede extraer a otro repositorio.
+
+- Servidor actual / app principal: `.`
+- Cliente MCP separado: `mcp-client/`
+- El cliente arranca en `8081` y se conecta al servidor MCP configurado con `RESTAURANT_MCP_SERVER_URL` y `RESTAURANT_MCP_SERVER_ENDPOINT`.

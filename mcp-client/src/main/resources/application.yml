@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: restaurant-mcp-client
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      chat:
+        options:
+          model: ${OPENAI_MODEL:gpt-4o-mini}
+    mcp:
+      client:
+        enabled: true
+        name: restaurant-mcp-client
+        version: 0.0.1
+        type: SYNC
+        request-timeout: 30s
+        streamable-http:
+          connections:
+            restaurant-server:
+              url: ${RESTAURANT_MCP_SERVER_URL:http://localhost:8080}
+              endpoint: ${RESTAURANT_MCP_SERVER_ENDPOINT:/mcp}
+
+server:
+  port: ${MCP_CLIENT_PORT:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

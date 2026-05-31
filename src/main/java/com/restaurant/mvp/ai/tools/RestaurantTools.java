@@ -4,14 +4,12 @@ import com.restaurant.mvp.service.ConversationContext;
 import com.restaurant.mvp.service.MenuService;
 import com.restaurant.mvp.service.ReservationService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RestaurantTools {
