@@ -25,7 +25,7 @@ public class McpChatController {
 
     @PostMapping
     public McpChatResponse chat(@Valid @RequestBody McpChatRequest request) {
-        return new McpChatResponse(mcpChatService.chat(request.message()));
+        return new McpChatResponse(mcpChatService.chat("local-chat", request.message(), request.phone()));
     }
 
     @GetMapping("/tools")

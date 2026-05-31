@@ -1,60 +1,56 @@
 # restaurant-mcp-client
 
-Proyecto Spring Boot separado que actúa como **MCP client** y se conecta a un servidor MCP de restaurante.
+Cliente MCP y chatbot del restaurante. Aquí vive toda la lógica conversacional y de canal:
 
-## Recomendación de estructura
+- OpenAI `ChatClient`
+- conexión a MCP server remoto
+- memoria por conversación
+- webhook Twilio WhatsApp
+- endpoint REST local `/mcp-chat`
 
-Para este MVP conviene mantenerlo en el mismo repositorio como carpeta separada (`mcp-client/`) porque:
+## Responsabilidad
 
-- servidor y cliente evolucionan juntos durante la demo;
-- es fácil probar cambios de contrato MCP en una sola PR;
-- si el cliente crece o se despliega por separado, luego se puede extraer a otro repositorio sin mezclar paquetes Java ni builds.
-
-## Qué hace
-
-- Arranca en `8081`.
-- Se conecta a un MCP server remoto configurado por variables de entorno.
-- Registra las tools descubiertas del MCP server como tools disponibles para `ChatClient`.
-- Expone un endpoint local para chatear usando esas tools.
-- Expone un endpoint para listar tools descubiertas.
+El cliente recibe mensajes de WhatsApp o REST, decide con el LLM qué necesita hacer y llama tools MCP remotas expuestas por `mcp-server`.
 
 ## Variables
 
 - `OPENAI_API_KEY`: API key de OpenAI.
 - `OPENAI_MODEL`: modelo de chat, por defecto `gpt-4o-mini`.
-- `RESTAURANT_MCP_SERVER_URL`: URL base del MCP server, por defecto `http://localhost:8080`.
+- `RESTAURANT_MCP_SERVER_URL`: URL base del MCP server.
 - `RESTAURANT_MCP_SERVER_ENDPOINT`: endpoint MCP, por defecto `/mcp`.
 - `MCP_CLIENT_PORT`: puerto HTTP del cliente, por defecto `8081`.
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_WHATSAPP_NUMBER`
 
-## Ejecutar
+## Endpoints
+
+- `POST /mcp-chat`: chat local usando tools MCP remotas.
+- `GET /mcp-chat/tools`: lista tools descubiertas.
+- `POST /webhooks/twilio`: webhook Twilio `application/x-www-form-urlencoded`.
+
+## Ejecutar local
 
 ```bash
 mvn spring-boot:run
 ```
 
+## Ejecutar con Docker Compose
 
-## Docker Compose opcional
-
-Desde la raíz del repositorio puedes levantar el cliente con perfil explícito:
+Desde la raíz del repositorio:
 
 ```bash
-docker compose --profile mcp-client up --build
+docker compose up --build
 ```
 
-El perfil evita arrancar el cliente por defecto hasta que tengas un servidor MCP compatible expuesto.
-
-## Probar chat
+## Probar chat local
 
 ```bash
 curl -X POST http://localhost:8081/mcp-chat \
   -H "Content-Type: application/json" \
-  -d '{"message":"¿Qué menú hay mañana?"}'
+  -d '{"message":"Reserva mañana a las 19 para 4 personas, soy Charly","phone":"34640064806"}'
 ```
 
-## Ver tools descubiertas
+## Twilio
 
-```bash
-curl http://localhost:8081/mcp-chat/tools
-```
-
-> Nota: el servidor configurado debe exponer un endpoint MCP compatible. Este cliente está preparado para transporte `streamable-http`.
+Twilio enviará `From` y `Body` al webhook. El cliente extrae el teléfono real desde `From`, lo pasa en el prompt y el LLM debe usarlo al invocar la tool remota `createReservation`.

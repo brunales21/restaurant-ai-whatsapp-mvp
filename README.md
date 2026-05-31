@@ -1,81 +1,99 @@
-# restaurant-ai-whatsapp-mvp (Twilio Sandbox)
+# restaurant-ai-whatsapp-platform
 
-MVP de chatbot para restaurantes con **Java 21 + Spring Boot 3.5.x + Spring AI + PostgreSQL**, conectado a **WhatsApp mediante Twilio Sandbox**.
+Plataforma separada en dos proyectos Spring Boot:
 
-## Flujo
+```text
+mcp-server/  -> servidor MCP puro con tools de restaurante y PostgreSQL
+mcp-client/  -> cliente MCP con chatbot OpenAI, Twilio WhatsApp y endpoint REST local
+```
 
-WhatsApp -> Twilio Sandbox -> `POST /webhooks/twilio` -> `ChatService` -> Spring AI tools -> PostgreSQL -> respuesta -> Twilio API.
+## Decisión de estructura
 
-## Configuración requerida
+Recomiendo mantener ambos proyectos en este repositorio por ahora, pero en carpetas separadas:
 
-Variables de entorno:
+- `mcp-server` no conoce Twilio ni OpenAI chat; solo expone tools MCP y accede a PostgreSQL.
+- `mcp-client` contiene la experiencia conversacional: OpenAI, memoria por conversación, webhook Twilio y endpoint REST.
+- Docker Compose levanta ambos de forma coordinada para demos.
+- Si más adelante servidor y cliente tienen ciclos de vida distintos, se puede extraer cada carpeta a su propio repositorio sin mezclar código.
 
-- `OPENAI_API_KEY`
-- `TWILIO_ACCOUNT_SID`
-- `TWILIO_AUTH_TOKEN`
-- `TWILIO_WHATSAPP_NUMBER` (por defecto sandbox: `whatsapp:+14155238886`)
+## Arquitectura final
 
-## Arranque
+```text
+WhatsApp / REST local
+        |
+        v
+mcp-client (8081)
+  - /webhooks/twilio
+  - /mcp-chat
+  - OpenAI ChatClient
+  - descubre tools MCP remotas
+        |
+        v
+mcp-server (8080)
+  - /mcp
+  - tools: menú y reservas
+  - PostgreSQL
+        |
+        v
+PostgreSQL
+```
+
+## Levantar todo con Docker Compose
 
 ```bash
 docker compose up --build
 ```
 
-## Exponer webhook con ngrok
+Servicios:
 
-1. Arranca app en `http://localhost:8080`.
-2. Ejecuta:
+- MCP server: `http://localhost:8080`
+- MCP endpoint: `http://localhost:8080/mcp`
+- MCP client: `http://localhost:8081`
+- Chat REST local: `POST http://localhost:8081/mcp-chat`
+- Twilio webhook: `POST http://localhost:8081/webhooks/twilio`
+- PostgreSQL: `localhost:5432`
+
+## Variables necesarias
+
+Para el cliente:
+
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL` (default `gpt-4o-mini`)
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_WHATSAPP_NUMBER` (default sandbox `whatsapp:+14155238886`)
+
+Para el servidor:
+
+- `DB_URL`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+
+Docker Compose ya cablea `mcp-client` hacia `mcp-server` con:
+
+- `RESTAURANT_MCP_SERVER_URL=http://mcp-server:8080`
+- `RESTAURANT_MCP_SERVER_ENDPOINT=/mcp`
+
+## Probar por REST local
 
 ```bash
-ngrok http 8080
+curl -X POST http://localhost:8081/mcp-chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"¿Qué menú hay mañana?","phone":"34640064806"}'
 ```
 
-3. Copia URL HTTPS pública (ej: `https://abc123.ngrok-free.app`).
+## Probar tools descubiertas
 
-## Conectar Twilio Sandbox
+```bash
+curl http://localhost:8081/mcp-chat/tools
+```
 
-1. En Twilio Console -> Messaging -> Try it out -> Send a WhatsApp message -> Sandbox.
-2. Une tu teléfono enviando el código de join al número sandbox.
-3. En "When a message comes in" coloca:
+## Twilio Sandbox
+
+Configura en Twilio Sandbox el webhook de mensajes entrantes apuntando a:
 
 ```text
-https://TU_NGROK/webhooks/twilio
+https://TU_URL_PUBLICA/webhooks/twilio
 ```
 
-4. Método: `HTTP POST`.
-
-## Webhook esperado
-
-- Endpoint: `POST /webhooks/twilio`
-- Content-Type: `application/x-www-form-urlencoded`
-- Parámetros usados:
-  - `From`
-  - `Body`
-
-## Prueba rápida
-
-Desde tu WhatsApp (el número unido al sandbox), envía:
-
-- "¿Qué hay hoy de menú?"
-- "Reserva una mesa mañana a las 14 para 2 personas, soy Ana, +34600111222"
-- "Cancela mi reserva del teléfono +34600111222"
-
-La app responderá automáticamente usando Spring AI + tools actuales.
-
-
-## Evoluciones incluidas
-
-- Consulta de menú por fecha con tool `getMenuByDate` (ej: mañana, pasado, este jueves, 2026-05-23).
-- Memoria básica por número de WhatsApp (contexto por `From`).
-- Reservas validadas con fecha real actual/futura y datos demo en mayo de 2026.
-
-
-## Proyecto MCP client separado
-
-Este repositorio ahora incluye un segundo proyecto Spring Boot en `mcp-client/`.
-
-Recomendación aplicada: mantenerlo en el mismo repositorio por ahora, pero como proyecto separado. Así el MVP conserva juntos servidor y cliente mientras se estabiliza el contrato MCP; cuando el cliente tenga ciclo de vida propio, se puede extraer a otro repositorio.
-
-- Servidor actual / app principal: `.`
-- Cliente MCP separado: `mcp-client/`
-- El cliente arranca en `8081` y se conecta al servidor MCP configurado con `RESTAURANT_MCP_SERVER_URL` y `RESTAURANT_MCP_SERVER_ENDPOINT`.
+En local necesitas exponer el puerto `8081` con ngrok/cloudflared o desplegar el `mcp-client` en una URL pública HTTPS.
