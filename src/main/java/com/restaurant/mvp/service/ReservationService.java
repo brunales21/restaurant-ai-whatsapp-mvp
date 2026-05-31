@@ -74,7 +74,7 @@ public class ReservationService {
 
     private String normalizePhone(String rawPhone) {
         if (rawPhone == null || rawPhone.isBlank()) {
-            return null;
+            return "phone null";
         }
         String withoutChannel = rawPhone.replace("whatsapp:", "").trim();
         String digitsOnly = withoutChannel.replaceAll("[^0-9]", "");

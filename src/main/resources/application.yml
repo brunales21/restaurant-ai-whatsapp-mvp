@@ -13,6 +13,14 @@ spring:
     init:
       mode: always
   ai:
+    mcp:
+      server:
+        url: ${MCP_SERVER_URL:http://localhost:8080/mcp}
+        name: restaurant-ai-mcp
+        protocol: streamable
+        type: sync
+        stdio:
+          enabled: false
     openai:
       api-key: ${OPENAI_API_KEY:}
       chat:
