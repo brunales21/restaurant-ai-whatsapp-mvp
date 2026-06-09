@@ -3,12 +3,14 @@ package com.restaurant.mcpserver.ai.tools;
 import com.restaurant.mcpserver.service.MenuService;
 import com.restaurant.mcpserver.service.ReservationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RestaurantTools {
@@ -18,11 +20,13 @@ public class RestaurantTools {
 
     @Tool(description = "Obtiene el menú del día actual del restaurante")
     public String getTodayMenu() {
+        log.info("Tool called: getTodayMenu");
         return menuService.getTodayMenu();
     }
 
     @Tool(description = "Obtiene el menú de una fecha concreta. Usa formato ISO yyyy-MM-dd")
     public String getMenuByDate(LocalDate menuDate) {
+        log.info("Tool called: getMenuByDate - menuDate={}", menuDate);
         return menuService.getMenuByDate(menuDate);
     }
 
