@@ -116,6 +116,18 @@ curl http://localhost:8081/mcp-chat/tools
 ```
 
 
+
+## Optimización de memoria y tokens
+
+El `mcp-client` mantiene solo una ventana reciente de contexto por conversación:
+
+- máximo 6 interacciones recientes;
+- máximo aproximado de 2.000 caracteres de contexto;
+- máximo 500 conversaciones recientes en memoria del proceso;
+- logs con número de interacciones y caracteres enviados como contexto.
+
+Antes, el contexto conversacional crecía indefinidamente y se reenviaba al modelo en cada turno, aumentando coste y latencia. Ahora se descartan interacciones antiguas y, cuando el usuario necesita información real de reservas, el modelo puede usar `getReservationsByPhone(phone)` para consultar la base de datos en vez de depender de memoria acumulada.
+
 ## Seguridad al cancelar reservas
 
 La cancelación se autentica por teléfono:

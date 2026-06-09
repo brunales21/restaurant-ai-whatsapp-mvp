@@ -14,6 +14,7 @@ Servidor MCP puro para el restaurante. No contiene lógica de Twilio ni lógica 
 - `getMenuByDate`
 - `createReservation`
 - `cancelReservation`
+- `getReservationsByPhone`
 
 
 ## Regla de cancelación

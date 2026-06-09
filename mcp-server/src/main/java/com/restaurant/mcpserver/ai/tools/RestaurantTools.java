@@ -35,6 +35,11 @@ public class RestaurantTools {
         return reservationService.createReservation(customerName, phone, reservationDate, reservationTime, people);
     }
 
+    @Tool(description = "Consulta reservas activas por teléfono normalizado. Úsala para recuperar reservas reales antes de cancelar o cuando el cliente pregunte por sus reservas.")
+    public String getReservationsByPhone(String phone) {
+        return reservationService.getReservationsByPhone(phone);
+    }
+
     @Tool(description = "Cancela una reserva solo si el teléfono del solicitante coincide con el teléfono asociado a la reserva. Requiere el teléfono real del remitente en requesterPhone.")
     public String cancelReservation(Long reservationId, String requesterPhone) {
         return reservationService.cancelReservation(reservationId, requesterPhone);

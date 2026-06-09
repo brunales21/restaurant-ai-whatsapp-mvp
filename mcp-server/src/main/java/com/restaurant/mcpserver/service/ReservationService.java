@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +51,26 @@ public class ReservationService {
                 saved.getReservationTime() + " para " + saved.getPeople() + " personas.";
     }
 
+
+    @Transactional(readOnly = true)
+    public String getReservationsByPhone(String phone) {
+        String normalizedPhone = normalizePhone(phone);
+        if (normalizedPhone == null) {
+            return "Necesito un teléfono válido para consultar reservas.";
+        }
+
+        List<Reservation> reservations = reservationRepository
+                .findByPhoneAndStatusOrderByReservationDateAscReservationTimeAsc(normalizedPhone, CONFIRMED);
+
+        if (reservations.isEmpty()) {
+            return "No encontré reservas activas asociadas a ese teléfono.";
+        }
+
+        return "Reservas activas asociadas al teléfono " + normalizedPhone + ":\n" + reservations.stream()
+                .map(this::formatReservationSummary)
+                .collect(Collectors.joining("\n"));
+    }
+
     @Transactional
     public String cancelReservation(Long reservationId, String phone) {
         String normalizedPhone = normalizePhone(phone);
@@ -65,6 +87,12 @@ public class ReservationService {
         return reservationRepository.findFirstByPhoneAndStatus(normalizedPhone, CONFIRMED)
                 .map(this::cancelAndBuildMessage)
                 .orElse("No encontré una reserva activa asociada a tu teléfono.");
+    }
+
+    private String formatReservationSummary(Reservation reservation) {
+        return "ID " + reservation.getId() + " - " + reservation.getCustomerName() + " - " +
+                reservation.getReservationDate() + " a las " + reservation.getReservationTime() +
+                " - " + reservation.getPeople() + " personas";
     }
 
     private String cancelIfOwnedByPhone(Reservation reservation, String normalizedPhone) {
