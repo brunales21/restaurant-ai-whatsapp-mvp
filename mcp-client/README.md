@@ -23,19 +23,6 @@ El cliente recibe mensajes de WhatsApp o REST, decide con el LLM qué necesita h
 - `TWILIO_AUTH_TOKEN`
 - `TWILIO_WHATSAPP_NUMBER`
 
-
-## Evitar error 404 en `/mcp`
-
-Cuando cliente y servidor corren con Docker Compose, configura el servidor MCP con la URL interna:
-
-```bash
-RESTAURANT_MCP_SERVER_URL=http://mcp-server:8080
-RESTAURANT_MCP_SERVER_ENDPOINT=/mcp
-```
-
-No uses la URL pública de ngrok para `RESTAURANT_MCP_SERVER_URL` salvo que esa URL esté exponiendo realmente el `mcp-server`.
-Normalmente ngrok debe apuntar al cliente (`8081`) para Twilio, no al servidor MCP.
-
 ## Endpoints
 
 - `POST /mcp-chat`: chat local usando tools MCP remotas.
