@@ -15,6 +15,11 @@ Servidor MCP puro para el restaurante. No contiene lógica de Twilio ni lógica 
 - `createReservation`
 - `cancelReservation`
 
+
+## Regla de cancelación
+
+`cancelReservation` valida propiedad por teléfono: si recibe un ID, la reserva solo se cancela cuando está activa y el teléfono normalizado de la reserva coincide con `requesterPhone`.
+
 ## Configuración
 
 - `DB_URL`

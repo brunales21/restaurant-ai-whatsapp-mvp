@@ -51,20 +51,31 @@ public class ReservationService {
 
     @Transactional
     public String cancelReservation(Long reservationId, String phone) {
+        String normalizedPhone = normalizePhone(phone);
+        if (normalizedPhone == null) {
+            return "Por seguridad, solo puedo cancelar reservas usando el teléfono asociado al remitente.";
+        }
+
         if (reservationId != null) {
             return reservationRepository.findById(reservationId)
-                    .map(this::cancelAndBuildMessage)
+                    .map(reservation -> cancelIfOwnedByPhone(reservation, normalizedPhone))
                     .orElse("No encontré una reserva con ese ID.");
         }
 
-        String normalizedPhone = normalizePhone(phone);
-        if (normalizedPhone != null) {
-            return reservationRepository.findFirstByPhoneAndStatus(normalizedPhone, CONFIRMED)
-                    .map(this::cancelAndBuildMessage)
-                    .orElse("No encontré una reserva activa para ese teléfono.");
-        }
+        return reservationRepository.findFirstByPhoneAndStatus(normalizedPhone, CONFIRMED)
+                .map(this::cancelAndBuildMessage)
+                .orElse("No encontré una reserva activa asociada a tu teléfono.");
+    }
 
-        return "Para cancelar, necesito un ID de reserva o un teléfono.";
+    private String cancelIfOwnedByPhone(Reservation reservation, String normalizedPhone) {
+        String reservationPhone = normalizePhone(reservation.getPhone());
+        if (!CONFIRMED.equals(reservation.getStatus())) {
+            return "La reserva indicada no está activa.";
+        }
+        if (!normalizedPhone.equals(reservationPhone)) {
+            return "No puedo cancelar esta reserva porque no está asociada a tu teléfono.";
+        }
+        return cancelAndBuildMessage(reservation);
     }
 
     private String cancelAndBuildMessage(Reservation reservation) {

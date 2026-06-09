@@ -74,6 +74,33 @@ Docker Compose ya cablea `mcp-client` hacia `mcp-server` con:
 - `RESTAURANT_MCP_SERVER_URL=http://mcp-server:8080`
 - `RESTAURANT_MCP_SERVER_ENDPOINT=/mcp`
 
+
+## Configuración MCP importante
+
+Si levantas la plataforma con Docker Compose, **no uses ngrok para `RESTAURANT_MCP_SERVER_URL`**.
+
+Correcto dentro de Compose:
+
+```bash
+RESTAURANT_MCP_SERVER_URL=http://mcp-server:8080
+RESTAURANT_MCP_SERVER_ENDPOINT=/mcp
+```
+
+Incorrecto para la conexión interna MCP:
+
+```bash
+RESTAURANT_MCP_SERVER_URL=https://TU_NGROK
+```
+
+Ngrok solo debe exponer el cliente para Twilio:
+
+```bash
+ngrok http 8081
+# Twilio -> https://TU_NGROK/webhooks/twilio
+```
+
+Si apuntas el cliente MCP a un ngrok que realmente está exponiendo `mcp-client` (8081), Spring AI intentará llamar `https://TU_NGROK/mcp` y recibirá `404 path=/mcp`, porque `/mcp` existe en `mcp-server`, no en `mcp-client`.
+
 ## Probar por REST local
 
 ```bash
@@ -87,6 +114,17 @@ curl -X POST http://localhost:8081/mcp-chat \
 ```bash
 curl http://localhost:8081/mcp-chat/tools
 ```
+
+
+## Seguridad al cancelar reservas
+
+La cancelación se autentica por teléfono:
+
+- `mcp-client` extrae el teléfono real desde Twilio `From` y se lo pasa al LLM como teléfono autorizado.
+- Para cancelar, el LLM debe llamar `cancelReservation` con `requesterPhone` igual a ese teléfono.
+- `mcp-server` solo cancela si la reserva activa pertenece a ese teléfono normalizado; si el ID pertenece a otro cliente, devuelve un rechazo y no cambia la reserva.
+
+Esto evita que un usuario cancele reservas de otro solo con conocer el ID.
 
 ## Twilio Sandbox
 
