@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class McpChatService {
 
     private static final int MAX_MEMORY_INTERACTIONS = 6;
-    private static final int MAX_MEMORY_CHARS = 2_000;
+    private static final int MAX_MEMORY_CHARS = 1_000;
     private static final int MAX_MEMORY_CONVERSATIONS = 500;
 
     private final ChatClient chatClient;
@@ -40,28 +40,35 @@ public class McpChatService {
     }
 
     public String chat(String conversationId, String message, String senderPhone) {
-        ConversationMemory conversationMemory = memoryByConversation.computeIfAbsent(conversationId, ignored -> new ConversationMemory());
+        ConversationMemory conversationMemory =
+                memoryByConversation.computeIfAbsent(conversationId, ignored -> new ConversationMemory());
+
         conversationMemory.touch();
         pruneConversationCache();
 
         Deque<String> memory = conversationMemory.interactions();
         String memoryContext = buildMemoryContext(memory);
         String today = LocalDate.now(clock).toString();
-        String phoneInstruction = StringUtils.hasText(senderPhone)
-                ? "El teléfono real del cliente es " + senderPhone + ". Si creas una reserva, llama la tool createReservation con exactamente ese teléfono y nunca pidas el teléfono. " +
-                "Si cancelas una reserva, llama la tool cancelReservation con requesterPhone exactamente igual a ese teléfono; no aceptes cancelar reservas asociadas a otro número. " +
-                "Si el usuario pregunta por sus reservas o quiere cancelar sin recordar el ID, usa getReservationsByPhone con ese teléfono antes de decidir. "
-                : "Si creas o cancelas una reserva desde chat local y no hay teléfono, pide solo un teléfono de contacto para autenticar la operación. ";
 
-        log.info("Contexto conversacional para {}: {} interacciones, {} caracteres", conversationId, memory.size(), memoryContext.length());
+        String phoneInstruction = StringUtils.hasText(senderPhone)
+                ? "Teléfono cliente: " + senderPhone +
+                ". Usa siempre este teléfono para la gestión de reservas."
+                : "Si no tienes teléfono, solicítalo antes de crear o cancelar reservas.";
+
+        log.info("Contexto conversacional para {}: {} interacciones, {} caracteres",
+                conversationId, memory.size(), memoryContext.length());
 
         try {
             String response = chatClient.prompt()
-                    .system("Eres el chatbot de un restaurante. Responde en español de forma amable y breve. " +
-                            "Usa las tools MCP remotas para consultar menús y gestionar reservas. " +
-                            "Hoy es " + today + ". Interpreta mañana, pasado o este jueves usando esa fecha. " +
-                            phoneInstruction +
-                            "Contexto reciente del cliente: " + memoryContext)
+                    .system("""
+                        Eres el asistente de un restaurante.
+                        Responde breve en español.
+                        Usa las tools MCP para menús y reservas.
+                        Fecha actual: %s.
+                        %s
+                        Contexto:
+                        %s
+                        """.formatted(today, phoneInstruction, memoryContext))
                     .user(message)
                     .call()
                     .content();
@@ -69,13 +76,18 @@ public class McpChatService {
             rememberInteraction(memory, message, response);
 
             return response;
+
         } catch (RuntimeException ex) {
-            log.error("Error conectando con MCP server en {}{}: {}. " +
-                            "Si estás usando Docker Compose, RESTAURANT_MCP_SERVER_URL debe ser http://mcp-server:8080. " +
-                            "Usa ngrok solo para exponer mcp-client (/webhooks/twilio), no para la conexión interna MCP.",
-                    mcpServerUrl, mcpServerEndpoint, ex.getMessage(), ex);
-            return "Ahora mismo no puedo conectar con el servidor de herramientas del restaurante. " +
-                    "Revisa la configuración MCP interna y vuelve a intentarlo.";
+            log.error(
+                    "Error conectando con MCP server en {}{}: {}. " +
+                            "Si usas Docker Compose, RESTAURANT_MCP_SERVER_URL debe ser http://mcp-server:8080",
+                    mcpServerUrl,
+                    mcpServerEndpoint,
+                    ex.getMessage(),
+                    ex
+            );
+
+            return "Ahora mismo no puedo conectar con el servidor de herramientas del restaurante.";
         }
     }
 
@@ -101,6 +113,7 @@ public class McpChatService {
 
     private void pruneConversationCache() {
         int conversationsToRemove = memoryByConversation.size() - MAX_MEMORY_CONVERSATIONS;
+
         if (conversationsToRemove <= 0) {
             return;
         }
@@ -112,6 +125,7 @@ public class McpChatService {
     }
 
     private static final class ConversationMemory {
+
         private final Deque<String> interactions = new ConcurrentLinkedDeque<>();
         private volatile long lastAccess = System.currentTimeMillis();
 

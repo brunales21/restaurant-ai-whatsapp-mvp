@@ -32,16 +32,19 @@ public class RestaurantTools {
 
     @Tool(description = "Crea una reserva con nombre, teléfono normalizado, fecha real, hora y número de personas")
     public String createReservation(String customerName, String phone, LocalDate reservationDate, LocalTime reservationTime, Integer people) {
+        log.info("Tool called: createReservation - customerName={}, phone={}, reservationDate={}, reservationTime={}, people={}", customerName, phone, reservationDate, reservationTime, people);
         return reservationService.createReservation(customerName, phone, reservationDate, reservationTime, people);
     }
 
     @Tool(description = "Consulta reservas activas por teléfono normalizado. Úsala para recuperar reservas reales antes de cancelar o cuando el cliente pregunte por sus reservas.")
     public String getReservationsByPhone(String phone) {
+        log.info("Tool called: getReservationsByPhone - phone={}", phone);
         return reservationService.getReservationsByPhone(phone);
     }
 
     @Tool(description = "Cancela una reserva solo si el teléfono del solicitante coincide con el teléfono asociado a la reserva. Requiere el teléfono real del remitente en requesterPhone.")
     public String cancelReservation(Long reservationId, String requesterPhone) {
+        log.info("Tool called: cancelReservation - reservationId={}, requesterPhone={}", reservationId, requesterPhone);
         return reservationService.cancelReservation(reservationId, requesterPhone);
     }
 }
